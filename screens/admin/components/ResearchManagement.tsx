@@ -15,6 +15,7 @@ const mockResearchPapers: ResearchPaper[] = [
   {
     id: "1",
     title: "Machine Learning Applications in Healthcare",
+    sub_title: "A Comprehensive Review",
     authors: "Dr. Sarah Johnson",
     year: "2022",
     pdfUrl: "https://example.com/research1.pdf",
@@ -22,6 +23,7 @@ const mockResearchPapers: ResearchPaper[] = [
   {
     id: "2",
     title: "Sustainable Energy Solutions for Urban Areas",
+    sub_title: "A Comprehensive Review",
     authors: "Prof. Michael Chen, Dr. Lisa Wong",
     year: "2021",
     pdfUrl: "https://example.com/research2.pdf",
@@ -37,6 +39,7 @@ const ResearchManagement: React.FC = () => {
   // New research paper form state
   const [newPaper, setNewPaper] = useState<Partial<ResearchPaper>>({
     title: "",
+    sub_title: "",
     authors: "",
     year: "",
     pdfUrl: "",
@@ -44,7 +47,7 @@ const ResearchManagement: React.FC = () => {
 
   const handleAddPaper = () => {
     // Validate form
-    if (!newPaper.title || !newPaper.authors || !newPaper.year) {
+    if (!newPaper.title || !newPaper.sub_title || !newPaper.authors || !newPaper.year) {
       // Show error
       return
     }
@@ -52,6 +55,7 @@ const ResearchManagement: React.FC = () => {
     const paperToAdd: ResearchPaper = {
       id: Date.now().toString(), // In a real app, this would come from the backend
       title: newPaper.title || "",
+      sub_title: newPaper.sub_title || "",
       authors: newPaper.authors || "",
       year: newPaper.year || "",
       pdfUrl: newPaper.pdfUrl,
@@ -63,6 +67,7 @@ const ResearchManagement: React.FC = () => {
     // Reset form
     setNewPaper({
       title: "",
+      sub_title:"",
       authors: "",
       year: "",
       pdfUrl: "",
@@ -98,6 +103,12 @@ const ResearchManagement: React.FC = () => {
             label="Title"
             placeholder="Enter research paper title"
             value={newPaper.title}
+            onChangeText={(text) => setNewPaper({ ...newPaper, title: text })}
+          />
+          <CustomInput
+            label="Sub-Title"
+            placeholder="Enter research paper sub-title"
+            value={newPaper.sub_title}
             onChangeText={(text) => setNewPaper({ ...newPaper, title: text })}
           />
           <CustomInput

@@ -26,6 +26,7 @@ export type RootStackParamList = {
   export type ResearchPaper = {
     id: string
     title: string
+    sub_title: string
     authors: string
     year: string
     pdfUrl?: string
@@ -33,10 +34,12 @@ export type RootStackParamList = {
   
   export type EBook = {
     id: string
-    title: string
-    authors: string
-    category: string
-    pdfUrl: string
+  title: string
+  authors: string
+  category: string
+  publisher: string
+  publicationYear: string
+  pdfUrl: string
   }
   
   export type Announcement = {

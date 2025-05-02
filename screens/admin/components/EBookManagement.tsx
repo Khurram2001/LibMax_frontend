@@ -17,6 +17,8 @@ const mockEBooks: EBook[] = [
     title: "Digital Marketing Fundamentals",
     authors: "Robert Johnson",
     category: "Business",
+    publisher: "Pearson",
+    publicationYear: "2021",
     pdfUrl: "https://example.com/ebook1.pdf",
   },
   {
@@ -24,6 +26,8 @@ const mockEBooks: EBook[] = [
     title: "Introduction to Artificial Intelligence",
     authors: "Dr. Emily Chen",
     category: "Computer Science",
+    publisher: "MIT Press",
+    publicationYear: "2020",
     pdfUrl: "https://example.com/ebook2.pdf",
   },
 ]
@@ -38,12 +42,14 @@ const EBookManagement: React.FC = () => {
     title: "",
     authors: "",
     category: "",
+    publisher: "",
+    publicationYear: "",
     pdfUrl: "",
   })
 
   const handleAddEBook = () => {
     // Validate form
-    if (!newEBook.title || !newEBook.authors || !newEBook.pdfUrl) {
+    if (!newEBook.title || !newEBook.authors || !newEBook.publisher || !newEBook.publicationYear || !newEBook.pdfUrl) {
       // Show error
       return
     }
@@ -53,6 +59,8 @@ const EBookManagement: React.FC = () => {
       title: newEBook.title || "",
       authors: newEBook.authors || "",
       category: newEBook.category || "",
+      publisher: newEBook.publisher || "",
+      publicationYear: newEBook.publicationYear || "",
       pdfUrl: newEBook.pdfUrl || "",
     }
 
@@ -64,6 +72,8 @@ const EBookManagement: React.FC = () => {
       title: "",
       authors: "",
       category: "",
+      publisher: "",
+      publicationYear: "",
       pdfUrl: "",
     })
   }
@@ -108,6 +118,19 @@ const EBookManagement: React.FC = () => {
             onChangeText={(text) => setNewEBook({ ...newEBook, category: text })}
           />
           <CustomInput
+            label="Publisher"
+            placeholder="Enter publisher name"
+            value={newEBook.publisher}
+            onChangeText={(text) => setNewEBook({ ...newEBook, publisher: text })}
+          />
+          <CustomInput
+            label="Publication Year"
+            placeholder="Enter publication year"
+            value={newEBook.publicationYear}
+            onChangeText={(text) => setNewEBook({ ...newEBook, publicationYear: text })}
+            keyboardType="numeric"
+          />
+          <CustomInput
             label="PDF URL"
             placeholder="Enter PDF URL"
             value={newEBook.pdfUrl}
@@ -123,7 +146,7 @@ const EBookManagement: React.FC = () => {
           <ListItem
             key={ebook.id}
             title={ebook.title}
-            subtitle={`${ebook.authors} | ${ebook.category}`}
+            subtitle={`${ebook.authors} | ${ebook.category} | ${ebook.publisher} | ${ebook.publicationYear}`}
             rightComponent={
               <CustomButton
                 title="Delete"
@@ -185,4 +208,3 @@ const styles = StyleSheet.create({
 })
 
 export default EBookManagement
-

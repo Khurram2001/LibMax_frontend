@@ -10,15 +10,15 @@ type Props = NativeStackScreenProps<RootStackParamList, "Welcome">
 const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <ImageBackground
-      source={{ uri: "https://placeholder.svg?height=800&width=400&text=Library+Background" }}
+      source={require('../assets/home-bg.png')}
       style={styles.backgroundImage}
     >
       <View style={styles.overlay}>
         <View style={styles.container}>
-          <Image
-            source={{ uri: "https://placeholder.svg?height=150&width=150&text=LibMax+Logo" }}
-            style={styles.logo}
-          />
+        <Image
+        source={require('../assets/library-logo.png')}
+        style={styles.logo}
+      />
           <Text style={styles.title}>LibMax</Text>
           <Text style={styles.subtitle}>University Library Management System</Text>
 
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 150,
-    height: 150,
+    height: 180,
     marginBottom: 20,
   },
   title: {

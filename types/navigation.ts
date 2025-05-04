@@ -26,9 +26,21 @@ export type RootStackParamList = {
   export type ResearchPaper = {
     id: string
     title: string
-    sub_title: string
     authors: string
     year: string
+    subject: string
+    callNumber: string // corresponds to Diss#/CallNo
+    accessionNumber: string
+    language: string
+    pages: number
+    publisher: string
+    doi: string
+    volumeIssue: string // e.g., "Vol. 10, Issue 3"
+    journalName: string
+    paperType: string // e.g., "Journal", "Thesis", etc.
+    impactFactor?: number
+    sdg?: string // e.g., "SDG 9 - Industry, Innovation and Infrastructure"
+    category: string
     pdfUrl?: string
   }
   

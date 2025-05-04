@@ -222,6 +222,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
+    width: "80%",
   },
   searchInput: {
     flex: 1,

@@ -19,7 +19,7 @@ const LoginScreen: React.FC<Props> = ({ navigation, route }) => {
   const [passwordError, setPasswordError] = useState("")
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@(student\.)?uow\.edu\.pk$/
     if (!email) {
       setEmailError("Email is required")
       return false

@@ -1,84 +1,110 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native"
-import type { NativeStackScreenProps } from "@react-navigation/native-stack"
-import type { RootStackParamList } from "../types/navigation"
-import { colors, commonStyles } from "../styles/theme"
-import CustomInput from "../components/CustomInput"
-import CustomButton from "../components/CustomButton"
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../types/navigation";
+import { colors, commonStyles } from "../styles/theme";
+import CustomInput from "../components/CustomInput";
+import CustomButton from "../components/CustomButton";
+import { signUp } from "../services/api";
 
-type Props = NativeStackScreenProps<RootStackParamList, "SignUp">
+type Props = NativeStackScreenProps<RootStackParamList, "SignUp">;
 
 const SignUpScreen: React.FC<Props> = ({ navigation }) => {
-  const [fullName, setFullName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
+  const [userName, setuserName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [fullNameError, setFullNameError] = useState("")
-  const [emailError, setEmailError] = useState("")
-  const [passwordError, setPasswordError] = useState("")
-  const [confirmPasswordError, setConfirmPasswordError] = useState("")
+  const [userNameError, setuserNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
-  const validateFullName = (name: string) => {
+  const [loading, setLoading] = useState(false);
+
+  const validateuserName = (name: string) => {
     if (!name) {
-      setFullNameError("Full name is required")
-      return false
+      setuserNameError("Full name is required");
+      return false;
     }
-    setFullNameError("")
-    return true
-  }
+    setuserNameError("");
+    return true;
+  };
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@(student\.)?uow\.edu\.pk$/
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@(student\.)?uow\.edu\.pk$/;
     if (!email) {
-      setEmailError("Email is required")
-      return false
+      setEmailError("Email is required");
+      return false;
     } else if (!emailRegex.test(email)) {
-      setEmailError("Please enter a valid email address")
-      return false
+      setEmailError("Please enter a valid email address");
+      return false;
     }
-    setEmailError("")
-    return true
-  }
+    setEmailError("");
+    return true;
+  };
 
   const validatePassword = (password: string) => {
     if (!password) {
-      setPasswordError("Password is required")
-      return false
+      setPasswordError("Password is required");
+      return false;
     } else if (password.length < 6) {
-      setPasswordError("Password must be at least 6 characters")
-      return false
+      setPasswordError("Password must be at least 6 characters");
+      return false;
     }
-    setPasswordError("")
-    return true
-  }
+    setPasswordError("");
+    return true;
+  };
 
   const validateConfirmPassword = (confirmPassword: string) => {
     if (!confirmPassword) {
-      setConfirmPasswordError("Please confirm your password")
-      return false
+      setConfirmPasswordError("Please confirm your password");
+      return false;
     } else if (confirmPassword !== password) {
-      setConfirmPasswordError("Passwords do not match")
-      return false
+      setConfirmPasswordError("Passwords do not match");
+      return false;
     }
-    setConfirmPasswordError("")
-    return true
-  }
+    setConfirmPasswordError("");
+    return true;
+  };
 
-  const handleSignUp = () => {
-    const isFullNameValid = validateFullName(fullName)
-    const isEmailValid = validateEmail(email)
-    const isPasswordValid = validatePassword(password)
-    const isConfirmPasswordValid = validateConfirmPassword(confirmPassword)
+  const handleSignUp = async () => {
+    const isuserNameValid = validateuserName(userName);
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatePassword(password);
+    const isConfirmPasswordValid = validateConfirmPassword(confirmPassword);
 
-    if (isFullNameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid) {
-      // In a real app, you would register with a backend here
-      navigation.replace("UserDashboard")
+    if (
+      isuserNameValid &&
+      isEmailValid &&
+      isPasswordValid &&
+      isConfirmPasswordValid
+    ) {
+      setLoading(true);
+      try {
+        const res = await signUp({ userName, email, password });
+        Alert.alert("Success", "Account created successfully!");
+        navigation.replace("UserDashboard");
+      } catch (error: any) {
+        Alert.alert(
+          "Signup Error",
+          error.response?.data?.message || "Something went wrong. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
     }
-  }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -88,9 +114,9 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
         <CustomInput
           label="Full Name"
           placeholder="Enter your full name"
-          value={fullName}
-          onChangeText={setFullName}
-          error={fullNameError}
+          value={userName}
+          onChangeText={setuserName}
+          error={userNameError}
         />
 
         <CustomInput
@@ -121,7 +147,12 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
           error={confirmPasswordError}
         />
 
-        <CustomButton title="Sign Up" onPress={handleSignUp} style={styles.signUpButton} />
+        <CustomButton
+          title={loading ? <ActivityIndicator color="#fff" /> : "Sign Up"}
+          onPress={handleSignUp}
+          disabled={loading}
+          style={styles.signUpButton}
+        />
 
         <View style={styles.loginContainer}>
           <Text style={styles.loginText}>Already have an account?</Text>
@@ -131,8 +162,8 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </View>
     </ScrollView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   scrollContainer: {
@@ -166,7 +197,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginLeft: 5,
   },
-})
+});
 
-export default SignUpScreen
-
+export default SignUpScreen;

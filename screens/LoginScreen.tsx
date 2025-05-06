@@ -2,12 +2,21 @@
 
 import type React from "react"
 import { useState } from "react"
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native"
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from "react-native"
 import type { NativeStackScreenProps } from "@react-navigation/native-stack"
 import type { RootStackParamList } from "../types/navigation"
 import { colors, commonStyles } from "../styles/theme"
 import CustomInput from "../components/CustomInput"
 import CustomButton from "../components/CustomButton"
+import { login } from "../services/api"
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">
 
@@ -17,6 +26,7 @@ const LoginScreen: React.FC<Props> = ({ navigation, route }) => {
   const [password, setPassword] = useState("")
   const [emailError, setEmailError] = useState("")
   const [passwordError, setPasswordError] = useState("")
+  const [loading, setLoading] = useState(false)
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@(student\.)?uow\.edu\.pk$/
@@ -43,17 +53,32 @@ const LoginScreen: React.FC<Props> = ({ navigation, route }) => {
     return true
   }
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const isEmailValid = validateEmail(email)
     const isPasswordValid = validatePassword(password)
 
-    if (isEmailValid && isPasswordValid) {
-      // In a real app, you would authenticate with a backend here
-      if (userType === "admin") {
-        navigation.replace("AdminDashboard")
+    if (!isEmailValid || !isPasswordValid) return
+
+    setLoading(true)
+    try {
+      const response = await login({ email, password })
+
+      if (response.success) {
+        Alert.alert("Success", response.message)
+        if (userType === "admin") {
+          navigation.replace("AdminDashboard")
+        } else {
+          navigation.replace("UserDashboard")
+        }
       } else {
-        navigation.replace("UserDashboard")
+        Alert.alert("Login Failed", response.message || "Invalid credentials")
       }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Something went wrong. Please try again."
+      Alert.alert("Error", message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -81,7 +106,14 @@ const LoginScreen: React.FC<Props> = ({ navigation, route }) => {
           error={passwordError}
         />
 
-        <CustomButton title="Login" onPress={handleLogin} style={styles.loginButton} />
+        <CustomButton
+          title={loading ? "Logging in..." : "Login"}
+          onPress={handleLogin}
+          disabled={loading}
+          style={styles.loginButton}
+        />
+
+        {loading && <ActivityIndicator size="small" color={colors.navyBlue} style={{ marginTop: 10 }} />}
 
         {userType === "user" && (
           <View style={styles.signupContainer}>
@@ -130,4 +162,3 @@ const styles = StyleSheet.create({
 })
 
 export default LoginScreen
-

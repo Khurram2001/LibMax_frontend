@@ -10,10 +10,10 @@ const AboutUsScreen: React.FC<Props> = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Image
-          source={{ uri: "https://placeholder.svg?height=150&width=150&text=University+Logo" }}
-          style={styles.logo}
-        />
+      <Image
+      source={{ uri: "https://placeholder.svg?height=150&width=150&text=University+Logo" }}
+      style={styles.logo}
+    />
         <Text style={styles.title}>LibMax</Text>
         <Text style={styles.subtitle}>University Library Management System</Text>
       </View>
@@ -35,10 +35,10 @@ const AboutUsScreen: React.FC<Props> = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Meet Our Librarian</Text>
         <View style={styles.librarianContainer}>
-          <Image
-            source={{ uri: "https://placeholder.svg?height=100&width=100&text=Librarian" }}
-            style={styles.librarianImage}
-          />
+        <Image
+        source={{ uri: "https://placeholder.svg?height=150&width=150&text=University+Logo" }}
+        style={styles.logo}
+      />
           <View style={styles.librarianInfo}>
             <Text style={styles.librarianName}>Dr. Emily Johnson</Text>
             <Text style={styles.librarianTitle}>Head Librarian</Text>

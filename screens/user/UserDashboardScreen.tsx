@@ -1,8 +1,7 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
-import { View, Text, StyleSheet, ScrollView } from "react-native"
+import { useEffect, useState } from "react"
+import { View, Text, StyleSheet, ScrollView, Alert } from "react-native"
 import type { NativeStackScreenProps } from "@react-navigation/native-stack"
 import type { RootStackParamList, Announcement, Book } from "../../types/navigation"
 import { colors, commonStyles } from "../../styles/theme"
@@ -10,24 +9,9 @@ import CustomButton from "../../components/CustomButton"
 import CustomInput from "../../components/CustomInput"
 import CustomModal from "../../components/CustomModal"
 import ListItem from "../../components/ListItem"
+import { getAllAnnouncements } from "../../services/api"
 
 type Props = NativeStackScreenProps<RootStackParamList, "UserDashboard">
-
-// Mock data
-const mockAnnouncements: Announcement[] = [
-  {
-    id: "1",
-    title: "Library Hours Extended During Finals",
-    content: "The library will be open until midnight during finals week (May 10-17).",
-    date: "2023-05-01",
-  },
-  {
-    id: "2",
-    title: "New Research Databases Available",
-    content: "We have added three new research databases for science and engineering students.",
-    date: "2023-04-15",
-  },
-]
 
 const mockBooks: Book[] = [
   {
@@ -59,7 +43,7 @@ const mockBooks: Book[] = [
 ]
 
 const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
-  const [announcements] = useState<Announcement[]>(mockAnnouncements)
+  const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [books] = useState<Book[]>(mockBooks)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<Book[]>([])
@@ -68,6 +52,26 @@ const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
   const [isReserveModalVisible, setIsReserveModalVisible] = useState(false)
   const [isAnnouncementModalVisible, setIsAnnouncementModalVisible] = useState(false)
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null)
+
+  useEffect(() => {
+    loadAnnouncements()
+  }, [])
+
+  const loadAnnouncements = async () => {
+    try {
+      const response = await getAllAnnouncements()
+      const mappedAnnouncements: Announcement[] = response.announcements.map((a: any) => ({
+        id: a._id,
+        title: a.title,
+        content: a.description,
+        date: new Date(a.createdAt).toLocaleDateString(),
+      }))
+      setAnnouncements(mappedAnnouncements)
+    } catch (error) {
+      console.error("Failed to load announcements", error)
+      Alert.alert("Error", "Unable to load announcements. Please try again later.")
+    }
+  }
 
   const handleSearch = () => {
     if (searchQuery.trim() === "") {
@@ -93,7 +97,6 @@ const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
   }
 
   const confirmReservation = () => {
-    // In a real app, you would send a reservation request to the backend
     setIsReserveModalVisible(false)
     setSelectedBook(null)
     setSearchQuery("")
@@ -181,7 +184,6 @@ const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
         style={styles.logoutButton}
       />
 
-      {/* Reserve Book Modal */}
       <CustomModal
         visible={isReserveModalVisible}
         title="Reserve Book"
@@ -191,7 +193,6 @@ const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
         confirmText="Reserve"
       />
 
-      {/* Announcement Details Modal */}
       <CustomModal
         visible={isAnnouncementModalVisible}
         title={selectedAnnouncement?.title || ""}
@@ -282,4 +283,3 @@ const styles = StyleSheet.create({
 })
 
 export default UserDashboardScreen
-

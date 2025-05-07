@@ -1,71 +1,68 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { View, Text, StyleSheet, ScrollView } from "react-native"
-import { colors, commonStyles } from "../../../styles/theme"
-import CustomButton from "../../../components/CustomButton"
-import CustomInput from "../../../components/CustomInput"
-import CustomModal from "../../../components/CustomModal"
-import ListItem from "../../../components/ListItem"
-import type { Announcement } from "../../../types/navigation"
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
+import { colors, commonStyles } from "../../../styles/theme";
+import CustomButton from "../../../components/CustomButton";
+import CustomInput from "../../../components/CustomInput";
+import CustomModal from "../../../components/CustomModal";
+import ListItem from "../../../components/ListItem";
+import { createAnnouncement, getAllAnnouncements, deleteAnnouncement } from "../../../services/api";
 
-// Mock data
-const mockAnnouncements: Announcement[] = [
-  {
-    id: "1",
-    title: "Library Hours Extended During Finals",
-    content: "The library will be open until midnight during finals week (May 10-17).",
-    date: "2023-05-01",
-  },
-  {
-    id: "2",
-    title: "New Research Databases Available",
-    content: "We have added three new research databases for science and engineering students.",
-    date: "2023-04-15",
-  },
-]
+interface Announcement {
+  _id: string;
+  title: string;
+  description: string;
+  createdAt?: string;
+}
 
 const AnnouncementManagement: React.FC = () => {
-  const [announcements, setAnnouncements] = useState<Announcement[]>(mockAnnouncements)
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false)
-  const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null)
-
-  // New announcement form state
-  const [newAnnouncement, setNewAnnouncement] = useState<Partial<Announcement>>({
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [newAnnouncement, setNewAnnouncement] = useState<{ title: string; description: string }>({
     title: "",
-    content: "",
-    date: new Date().toISOString().split("T")[0],
-  })
+    description: "",
+  });
 
-  const handleAddAnnouncement = () => {
-    // Validate form
-    if (!newAnnouncement.title || !newAnnouncement.content) {
-      // Show error
-      return
+  const loadAnnouncements = async () => {
+    try {
+      const res = await getAllAnnouncements();
+      setAnnouncements(res.announcements);
+    } catch (error) {
+      console.error("Failed to load announcements", error);
+    }
+  };
+
+  useEffect(() => {
+    loadAnnouncements();
+  }, []);
+
+  const handleAddAnnouncement = async () => {
+    if (!newAnnouncement.title || !newAnnouncement.description) {
+      Alert.alert("Validation Error", "Both title and description are required.");
+      return;
     }
 
-    const announcementToAdd: Announcement = {
-      id: Date.now().toString(), // In a real app, this would come from the backend
-      title: newAnnouncement.title || "",
-      content: newAnnouncement.content || "",
-      date: newAnnouncement.date || new Date().toISOString().split("T")[0],
+    try {
+      await createAnnouncement(newAnnouncement);
+      await loadAnnouncements(); // Refresh list
+      setIsAddModalVisible(false);
+      setNewAnnouncement({ title: "", description: "" });
+    } catch (error) {
+      console.error("Error adding announcement:", error);
+      Alert.alert("Error", "Could not post announcement.");
     }
+  };
 
-    setAnnouncements([announcementToAdd, ...announcements])
-    setIsAddModalVisible(false)
-
-    // Reset form
-    setNewAnnouncement({
-      title: "",
-      content: "",
-      date: new Date().toISOString().split("T")[0],
-    })
-  }
-
-  const handleDeleteAnnouncement = (announcement: Announcement) => {
-    setAnnouncements(announcements.filter((a) => a.id !== announcement.id))
-  }
+  const handleDeleteAnnouncement = async (announcement: Announcement) => {
+    try {
+      await deleteAnnouncement(announcement._id);
+      setAnnouncements((prev) => prev.filter((a) => a._id !== announcement._id));
+    } catch (error) {
+      console.error("Delete error:", error);
+      Alert.alert("Error", "Failed to delete announcement.");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -91,10 +88,10 @@ const AnnouncementManagement: React.FC = () => {
             onChangeText={(text) => setNewAnnouncement({ ...newAnnouncement, title: text })}
           />
           <CustomInput
-            label="Content"
-            placeholder="Enter announcement content"
-            value={newAnnouncement.content}
-            onChangeText={(text) => setNewAnnouncement({ ...newAnnouncement, content: text })}
+            label="Description"
+            placeholder="Enter announcement description"
+            value={newAnnouncement.description}
+            onChangeText={(text) => setNewAnnouncement({ ...newAnnouncement, description: text })}
             multiline
             numberOfLines={4}
             style={styles.contentInput}
@@ -107,9 +104,9 @@ const AnnouncementManagement: React.FC = () => {
         <Text style={styles.subtitle}>Current Announcements</Text>
         {announcements.map((announcement) => (
           <ListItem
-            key={announcement.id}
+            key={announcement._id}
             title={announcement.title}
-            subtitle={`${announcement.date}`}
+            subtitle={new Date(announcement.createdAt || "").toLocaleDateString()}
             rightComponent={
               <CustomButton
                 title="Delete"
@@ -124,8 +121,8 @@ const AnnouncementManagement: React.FC = () => {
         {announcements.length === 0 && <Text style={styles.noResults}>No announcements available</Text>}
       </ScrollView>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -172,7 +169,6 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: "top",
   },
-})
+});
 
-export default AnnouncementManagement
-
+export default AnnouncementManagement;

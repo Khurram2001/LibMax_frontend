@@ -27,17 +27,17 @@ export const login = async (credentials: { email: string; password: string }) =>
 
 // ===================== Announcements =====================
 export const createAnnouncement = async (data: { title: string; description: string }) => {
-  const response = await api.post("/announcements", data); // ✅ fixed path
+  const response = await api.post("/auth/announcements", data); // ✅ fixed path
   return response.data;
 };
 
 export const getAllAnnouncements = async () => {
-  const response = await api.get("/announcements"); // ✅ fixed path
+  const response = await api.get("/auth/announcements"); // ✅ fixed path
   return response.data;
 };
 
 export const deleteAnnouncement = async (id: string) => {
-  const response = await api.delete(`/announcements/${id}`); // ✅ fixed path
+  const response = await api.delete(`/auth/announcements/${id}`); // ✅ fixed path
   return response.data;
 };
 

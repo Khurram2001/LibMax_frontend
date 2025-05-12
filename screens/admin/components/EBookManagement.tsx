@@ -275,11 +275,10 @@ const EBookManagement: React.FC = () => {
         type: "application/pdf",
         copyToCacheDirectory: true,
       })
-
+      console.log("DocumentPicker result:", result) // Log the result for debugging
       if (result.assets && result.assets.length > 0 && !result.canceled) {
         // @ts-ignore
         const fileAsset = result?.output[0]
-        console.log("Selected file:", result) // Log the selected file for debugging
         setNewEBook({ 
           ...newEBook, 
           file: fileAsset
@@ -304,13 +303,14 @@ const EBookManagement: React.FC = () => {
 
   setIsLoading(true);
   try {
+    console.log("Adding e-book:", newEBook); // Log the new e-book data for debugging
     const response = await createEbook({
       title: newEBook.title,
       authors: newEBook.authors,
       category: newEBook.category,
       file: newEBook.file,
     });
-    
+    console.log("E-book creation response:", response); // Log the response for debugging
     // The backend returns success: true for successful operations
     if (response && response.success) {
       Alert.alert("Success", "E-book added successfully");

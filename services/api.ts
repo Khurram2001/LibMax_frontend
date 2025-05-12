@@ -51,11 +51,8 @@ export const createEbook = async (data: { title: string; authors: string; catego
   formData.append("category", data.category);
   console.log("Form Data:", data.file); // Log the form data for debugging
   if (data.file) {
-    formData.append("pdf", {
-      uri: data.file.uri,
-      type: 'application/pdf',
-      name: data.file.name || 'document.pdf',
-    } as any);
+    console.log("File Data:", data.file); // Log the file data for debugging
+    formData.append("pdf", data.file);
   }
 
   const response = await api.post("/auth/ebook", formData, {

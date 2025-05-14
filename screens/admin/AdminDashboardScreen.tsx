@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   logoutButton: {
-    margin: 16,
+    margin: 2,
   },
 })
 

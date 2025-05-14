@@ -9,42 +9,12 @@ import CustomButton from "../../components/CustomButton"
 import CustomInput from "../../components/CustomInput"
 import CustomModal from "../../components/CustomModal"
 import ListItem from "../../components/ListItem"
-import { getAllAnnouncements } from "../../services/api"
+import { getAllAnnouncements, searchBooks, reserveBook } from "../../services/api"
 
 type Props = NativeStackScreenProps<RootStackParamList, "UserDashboard">
 
-const mockBooks: Book[] = [
-  {
-    id: "1",
-    title: "Introduction to Computer Science",
-    authors: "John Smith",
-    isbn: "978-3-16-148410-0",
-    category: "Computer Science",
-    publisher: "Academic Press",
-    publicationYear: "2020",
-    edition: "3rd",
-    totalCopies: 5,
-    availableCopies: 3,
-    shelfLocation: "CS-101",
-  },
-  {
-    id: "2",
-    title: "Advanced Mathematics for Engineers",
-    authors: "Jane Doe",
-    isbn: "978-1-23-456789-0",
-    category: "Mathematics",
-    publisher: "University Press",
-    publicationYear: "2019",
-    edition: "2nd",
-    totalCopies: 8,
-    availableCopies: 5,
-    shelfLocation: "MATH-202",
-  },
-]
-
 const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
-  const [books] = useState<Book[]>(mockBooks)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<Book[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -52,6 +22,9 @@ const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
   const [isReserveModalVisible, setIsReserveModalVisible] = useState(false)
   const [isAnnouncementModalVisible, setIsAnnouncementModalVisible] = useState(false)
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null)
+
+  // Hardcoded userId for testing, ideally should come from auth context or secure storage
+  const userId = "user_id_here" // 🔁 <-- Replace with actual user ID logic
 
   useEffect(() => {
     loadAnnouncements()
@@ -73,7 +46,7 @@ const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
     }
   }
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (searchQuery.trim() === "") {
       setSearchResults([])
       setIsSearching(false)
@@ -81,14 +54,14 @@ const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     setIsSearching(true)
-    const results = books.filter(
-      (book) =>
-        book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        book.authors.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        book.isbn.includes(searchQuery),
-    )
-
-    setSearchResults(results)
+    try {
+      const results: Book[] = await searchBooks(searchQuery)
+      setSearchResults(results)
+    } catch (error) {
+      console.error("Search failed:", error)
+      Alert.alert("Search Error", "Unable to fetch books. Please try again.")
+      setSearchResults([])
+    }
   }
 
   const handleReserveBook = (book: Book) => {
@@ -96,12 +69,25 @@ const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
     setIsReserveModalVisible(true)
   }
 
-  const confirmReservation = () => {
+  const confirmReservation = async () => {
+    if (!selectedBook) return
+
+    try {
+      const response = await reserveBook({ bookTitle: selectedBook.title, userId })
+      if (response.success) {
+        Alert.alert("Success", response.message)
+        // Refresh the search results
+        handleSearch()
+      } else {
+        Alert.alert("Error", response.message || "Reservation failed.")
+      }
+    } catch (error) {
+      console.error("Reservation failed:", error)
+      Alert.alert("Error", "Reservation failed. Please try again.")
+    }
+
     setIsReserveModalVisible(false)
     setSelectedBook(null)
-    setSearchQuery("")
-    setSearchResults([])
-    setIsSearching(false)
   }
 
   const viewAnnouncementDetails = (announcement: Announcement) => {
@@ -115,7 +101,7 @@ const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.sectionTitle}>Book Reservation</Text>
         <View style={styles.searchBar}>
           <CustomInput
-            placeholder="Search by title, author, or ISBN"
+            placeholder="Search by title, author, or category"
             value={searchQuery}
             onChangeText={setSearchQuery}
             style={styles.searchInput}
@@ -129,7 +115,7 @@ const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
               <ScrollView style={styles.resultsList}>
                 {searchResults.map((book) => (
                   <ListItem
-                    key={book.id}
+                    key={book._id || book.id}
                     title={book.title}
                     subtitle={`${book.authors} | Available: ${book.availableCopies}/${book.totalCopies}`}
                     rightComponent={
@@ -167,22 +153,13 @@ const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.navigationSection}>
         <Text style={styles.sectionTitle}>Quick Navigation</Text>
         <View style={styles.navigationButtons}>
-          <CustomButton
-            title="Faculty Research"
-            onPress={() => navigation.navigate("FacultyResearch")}
-            style={styles.navButton}
-          />
+          <CustomButton title="Faculty Research" onPress={() => navigation.navigate("FacultyResearch")} style={styles.navButton} />
           <CustomButton title="E-Books" onPress={() => navigation.navigate("EBooks")} style={styles.navButton} />
           <CustomButton title="About Us" onPress={() => navigation.navigate("AboutUs")} style={styles.navButton} />
         </View>
       </View>
 
-      <CustomButton
-        title="Logout"
-        onPress={() => navigation.replace("Welcome")}
-        type="secondary"
-        style={styles.logoutButton}
-      />
+      <CustomButton title="Logout" onPress={() => navigation.replace("Welcome")} type="secondary" style={styles.logoutButton} />
 
       <CustomModal
         visible={isReserveModalVisible}
@@ -208,78 +185,25 @@ const UserDashboardScreen: React.FC<Props> = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: colors.offWhite,
-  },
-  searchSection: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    ...commonStyles.subtitle,
-    marginBottom: 10,
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: "80%",
-  },
-  searchInput: {
-    flex: 1,
-    marginRight: 10,
-    height: 50,
-  },
-  searchButton: {
-    width: 100,
-    height: 50,
-  },
-  searchResults: {
-    marginTop: 10,
-  },
-  resultsList: {
-    maxHeight: 200,
-  },
-  reserveButton: {
-    width: 80,
-    height: 40,
-  },
-  noResults: {
-    textAlign: "center",
-    marginTop: 10,
-    color: colors.darkGray,
-  },
-  announcementsSection: {
-    marginBottom: 20,
-  },
-  announcementsList: {
-    maxHeight: 200,
-  },
-  navigationSection: {
-    marginBottom: 20,
-  },
-  navigationButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  navButton: {
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  logoutButton: {
-    marginTop: 10,
-  },
-  announcementDetails: {
-    padding: 10,
-  },
-  announcementDate: {
-    color: colors.darkGray,
-    marginBottom: 10,
-  },
-  announcementContent: {
-    color: colors.navyBlue,
-    lineHeight: 20,
-  },
+  container: { flex: 1, padding: 16, backgroundColor: colors.offWhite },
+  searchSection: { marginBottom: 20 },
+  sectionTitle: { ...commonStyles.subtitle, marginBottom: 10 },
+  searchBar: { flexDirection: "row", alignItems: "center", width: "72%" },
+  searchInput: { flex: 1, marginRight: 10, height: 50 },
+  searchButton: { width: 100, height: 50 },
+  searchResults: { marginTop: 10 },
+  resultsList: { maxHeight: 200 },
+  reserveButton: { width: 80, height: 40 },
+  noResults: { textAlign: "center", marginTop: 10, color: colors.darkGray },
+  announcementsSection: { marginBottom: 20 },
+  announcementsList: { maxHeight: 200 },
+  navigationSection: { marginBottom: 20 },
+  navigationButtons: { flexDirection: "row", justifyContent: "space-between" },
+  navButton: { padding: 10, flex: 1, marginHorizontal: 5 },
+  logoutButton: { marginTop: 10 },
+  announcementDetails: { padding: 10 },
+  announcementDate: { color: colors.darkGray, marginBottom: 10 },
+  announcementContent: { color: colors.navyBlue, lineHeight: 20 },
 })
 
 export default UserDashboardScreen

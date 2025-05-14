@@ -9,19 +9,20 @@ export type RootStackParamList = {
     AboutUs: undefined
   }
   
-  export type Book = {
-    id: string
-    title: string
-    authors: string
-    isbn: string
-    category: string
-    publisher: string
-    publicationYear: string
-    edition: string
-    totalCopies: number
-    availableCopies: number
-    shelfLocation: string
-  }
+  export interface Book {
+    id?: string; // optional
+  _id: string;
+  title: string;
+  authors: string;
+  isbn: string;
+  category: string;
+  publisher: string;
+  publicationYear: string;
+  edition?: string;
+  totalCopies: number;
+  availableCopies: number;
+  shelfLocation: string;
+}
   
   export type ResearchPaper = {
     id: string

@@ -95,8 +95,13 @@ export const addBook = async (data: {
   return response.data;
 };
 
-export const deleteBook = async (isbn: string) => {
-  const response = await api.delete(`/auth/deleteBook/${isbn}`);
+export const getBooks = async () => {
+  const response = await api.get("/auth/get-books");
+  return response.data.success ? response.data.message : [];
+};
+
+export const deleteBook = async (id: string) => {
+  const response = await api.delete(`/auth/del-book/${id}`);
   return response.data;
 };
 
@@ -107,6 +112,75 @@ export const reserveBook = async (data: { bookTitle: string; userId: string }) =
 
 export const searchBooks = async (query: string) => {
   const response = await api.get(`/auth/search-books?query=${encodeURIComponent(query)}`);
+  return response.data.success ? response.data.books : [];
+};
+
+// ===================== Faculty Research Papers =====================
+
+// Add Research Paper (with PDF upload)
+export const createResearchPaper = async (data: {
+  title: string;
+  authors: string;
+  year: string;
+  subject: string;
+  callNumber: string;
+  accessionNumber: string;
+  language: string;
+  pages: number;
+  publisher: string;
+  doi: string;
+  volumeIssue: string;
+  journalName: string;
+  paperType: string;
+  impactFactor: number;
+  sdg: string;
+  category: string;
+  file: any;
+}) => {
+  const formData = new FormData();
+  
+  // Add all form fields
+  formData.append("title", data.title);
+  formData.append("authors", data.authors);
+  formData.append("year", data.year);
+  formData.append("subject", data.subject);
+  formData.append("callNumber", data.callNumber);
+  formData.append("accessionNumber", data.accessionNumber);
+  formData.append("language", data.language);
+  formData.append("pages", data.pages.toString());
+  formData.append("publisher", data.publisher);
+  formData.append("doi", data.doi);
+  formData.append("volumeIssue", data.volumeIssue);
+  formData.append("journalName", data.journalName);
+  formData.append("paperType", data.paperType);
+  formData.append("impactFactor", data.impactFactor.toString());
+  formData.append("sdg", data.sdg);
+  formData.append("category", data.category);
+  // Add PDF file exactly as in the createEbook function
+  console.log("Form Data:", data.file); // Log the form data for debugging
+  if (data.file) {
+    console.log("File Data:", data.file); // Log the file data for debugging
+    formData.append("pdf", data.file);
+  }
+
+  const response = await api.post("/auth/research-paper", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  
+  return response.data;
+};
+
+// Get all Research Papers
+export const getResearchPapers = async () => {
+  const response = await api.get("/auth/get-research-papers");
+  return response.data.success ? response.data.data : [];
+};
+
+// Delete Research Paper
+export const deleteResearchPaper = async (paperId: string) => {
+  const response = await api.delete(`/auth/del-paper/${paperId}`);
   return response.data;
 };
 
